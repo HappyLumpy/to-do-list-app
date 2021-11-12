@@ -2,7 +2,7 @@ from rest_framework import serializers
 from .models import Todo, Comment
 from django.contrib.auth.models import User
 from datetime import datetime
-from rest_framework.serializers import ModelSerializer, Serializer, DecimalField, ListField, ChoiceField, BooleanField
+from rest_framework.serializers import ModelSerializer, Serializer, ListField, ChoiceField, BooleanField
 
 
 class AuthorSerializer(serializers.ModelSerializer):
@@ -66,5 +66,5 @@ class CommentSerializer(serializers.ModelSerializer):
 
 class QuerySerializer(Serializer):
     status = ListField(child=ChoiceField(choices=Todo.STATUS), required=False)
-    important = BooleanField(required=False)
-    public = BooleanField(required=False)
+    important = ListField(child=BooleanField(), required=False)
+    public = ListField(child=BooleanField(), required=False)

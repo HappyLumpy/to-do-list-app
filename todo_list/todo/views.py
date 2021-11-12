@@ -25,15 +25,21 @@ class TodoView(APIView):
 
 class TodoFilterView(APIView):
     def get(self, request):
-        todos = Todo.objects.filter(author=request.user)
+        todos = Todo.objects.all()
         query_params = QuerySerializer(data=request.query_params)
         if query_params.is_valid():
-            p1 = Q(status__in=query_params.data['status'])
-            p2 = Q(important=query_params.data['important'])
-            p3 = Q(public=query_params.data['public'])
-            todos = todos.filter(p1|p2|p3)
+            if query_params.data.get('status'):
+                p1 = Q(status__in=query_params.data['status'])
+                todos = todos.filter(p1)
+            if query_params.data.get('important'):
+                p2 = (Q(important=query_params.data['important'][0]) | Q(important=query_params.data['important'][1]))
+                todos = todos.filter(p2)
+            if query_params.data.get('public'):
+                p3 = (Q(public=query_params.data['public'][0]) | Q(public=query_params.data['public'][0]))
+                todos = todos.filter(p3)
         else:
             return Response(query_params.errors, status=status.HTTP_400_BAD_REQUEST)
+        todos = todos.filter(author=request.user).order_by('-date_add', '-important')
         serializer = TodoSerializer(todos, many=True)
         return Response(serializer.data)
 
