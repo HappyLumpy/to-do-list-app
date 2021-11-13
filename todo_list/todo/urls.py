@@ -11,6 +11,7 @@ urlpatterns = [
     path('comment/<int:todo_id>/add/', views.CommentEditorView.as_view(), name='comment_add'),
     path('comment/<int:comment_id>/delete/', views.CommentEditorView.as_view(), name='comment_del'),
     path('comment/', views.CommentView.as_view(), name='comment-list'),
+    # path('comment/<int:todo_id>/', views.CommentIdView.as_view(), name='commentid-list'),
     path('filter/', views.TodoFilterView.as_view(), name='todo-filter'),
     path('about/', views.about, name='about')
 ]

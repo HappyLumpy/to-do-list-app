@@ -17,7 +17,7 @@ def about(request):
 class TodoView(APIView):
 
     def get(self, request):
-        todos = Todo.objects.filter(author=request.user).union(Todo.objects.filter(public=True)).order_by(
+        todos = Todo.objects.filter(Q(author=request.user) | Q(public=True)).order_by(
             '-date_add', '-important')
         serializer = TodoSerializer(todos, many=True)
         return Response(serializer.data)
@@ -31,11 +31,11 @@ class TodoFilterView(APIView):
             if query_params.data.get('status'):
                 p1 = Q(status__in=query_params.data['status'])
                 todos = todos.filter(p1)
-            if query_params.data.get('important'):
-                p2 = (Q(important=query_params.data['important'][0]) | Q(important=query_params.data['important'][1]))
+            if query_params.data.get('important') is not  None:
+                p2 = (Q(important=query_params.data['important']))
                 todos = todos.filter(p2)
             if query_params.data.get('public'):
-                p3 = (Q(public=query_params.data['public'][0]) | Q(public=query_params.data['public'][0]))
+                p3 = (Q(public=query_params.data['public'][0]))
                 todos = todos.filter(p3)
         else:
             return Response(query_params.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -46,8 +46,7 @@ class TodoFilterView(APIView):
 
 class TodoDetailView(APIView):
     def get(self, request, todo_id):
-        todo = Todo.objects.filter(pk=todo_id, public=True).union(
-            Todo.objects.filter(pk=todo_id, author=request.user)).first()
+        todo = Todo.objects.filter(pk=todo_id, public=True).first()
         if not todo:
             raise NotFound(f'Опубликованная заметка с id={todo} не найдена')
         serializer = TodoDetailSerializer(todo)
@@ -82,6 +81,7 @@ class TodoEditorView(APIView):
             raise NotFound(f'Статья с id={todo_id} для пользователя {request.user.username} не найдена')
         else:
             todo.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class CommentEditorView(APIView):
@@ -116,3 +116,13 @@ class CommentView(APIView):
         serializer = CommentSerializer(comments, many=True)
 
         return Response(serializer.data)
+
+
+# class CommentIdView(APIView):
+#     def get(self, request, todo_id):
+#         # todo = list(Todo.objects.filter(pk=todo_id, author=request.user).first())
+#         comment = Comment.objects.filter(todo=todo_id)
+#         if not comment:
+#             raise NotFound(f'Заметка с id={todo_id} не найдена')
+#         serializer = CommentSerializer(comment)
+#         return Response(serializer.data)

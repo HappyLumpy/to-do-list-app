@@ -45,9 +45,16 @@ class TodoEditorSerializer(serializers.ModelSerializer):
         read_only_fields = ['author', 'date_add', ]
 
 
+class ComementMiniSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Todo
+        fields = ('id', 'message',)
+
+
 class CommentAddSerializer(serializers.ModelSerializer):
     """ Добавление комментария """
     author = AuthorSerializer(read_only=True)
+    todo = ComementMiniSerializer
 
     class Meta:
         model = Comment
@@ -57,6 +64,7 @@ class CommentAddSerializer(serializers.ModelSerializer):
 
 class CommentSerializer(serializers.ModelSerializer):
     author = AuthorSerializer(read_only=True)
+    todo = ComementMiniSerializer
 
     class Meta:
         model = Comment
@@ -66,5 +74,5 @@ class CommentSerializer(serializers.ModelSerializer):
 
 class QuerySerializer(Serializer):
     status = ListField(child=ChoiceField(choices=Todo.STATUS), required=False)
-    important = ListField(child=BooleanField(), required=False)
+    important = BooleanField(required=False)
     public = ListField(child=BooleanField(), required=False)
